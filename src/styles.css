@@ -1,4 +1,4 @@
-body, html {
+body {
     margin: 0;
     padding: 0;
 }
@@ -8,4 +8,34 @@ body, html {
     justify-content: center;
     align-items: center;
     height: 100vh;
+}
+
+.map-borough {
+    fill: #ffffff;
+    fill-opacity: 1;
+    fill-rule: evenodd;
+    stroke: #000000;
+    stroke-width: 3.5;
+    stroke-linecap: butt;
+    stroke-linejoin: round;
+    stroke-opacity: 1;
+    cursor: pointer;
+    transition: 0.1s ease;
+}
+
+.map-borough:hover {
+    filter: brightness(90%);
+}
+
+.map-border {
+    fill: none;
+    fill-opacity: 1;
+    fill-rule: evenodd;
+    stroke: #000000;
+    stroke-width: 6.19999981;
+    stroke-linecap: butt;
+    stroke-linejoin: round;
+    stroke-miterlimit: 4;
+    stroke-dasharray: none;
+    stroke-opacity: 1;
 }

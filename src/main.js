@@ -62,4 +62,5 @@ function displayData(crimeData, date) {
     }
 }
 
-await main();
+// noinspection JSIgnoredPromiseFromCall
+main();

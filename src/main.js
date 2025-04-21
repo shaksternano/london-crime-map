@@ -3,7 +3,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
 async function main() {
-    const crimeData = await fetch("./london_crime_data.json")
+    const crimeData = await fetch("./london-crime-data.json")
         .then(response => response.json());
 
     const dates = Object.keys(crimeData.dates);

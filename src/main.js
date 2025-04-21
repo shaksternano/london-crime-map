@@ -35,40 +35,87 @@ async function main() {
     const crimeData = await fetch("./london-crime-data.json")
         .then(response => response.json());
 
+    const maxOffences = getMaxOffences(crimeData);
+    const scale = getScale(maxOffences);
+    const offencesUpperBound = roundUp(maxOffences, scale);
+
     const dates = Object.keys(crimeData.dates);
     const timelineDateElement = document.getElementById("timeline-date");
 
-    updateData(crimeData, dates[0], timelineDateElement);
+    updateData(crimeData, dates[0], offencesUpperBound, timelineDateElement);
 
     const timelineSlider = document.getElementById("timeline-slider");
     timelineSlider.max = dates.length - 1;
     timelineSlider.value = 0;
     timelineSlider.oninput = () => {
         const date = dates[timelineSlider.value];
-        updateData(crimeData, date, timelineDateElement);
+        updateData(crimeData, date, offencesUpperBound, timelineDateElement);
     }
 }
 
 /**
  * @param crimeData {CrimeData}
- * @param date {string}
- * @param timelineDateElement {HTMLElement}
+ * @returns {number}
  */
-function updateData(crimeData, date, timelineDateElement) {
-    const dateObject = new Date(date);
-    const month = dateObject.toLocaleString("default", {month: "long"});
-    const year = dateObject.getFullYear();
-    timelineDateElement.innerHTML = `${month} ${year}`;
-    displayData(crimeData, date);
+function getMaxOffences(crimeData) {
+    let maxOffences = 0;
+    for (const dateData of Object.values(crimeData.dates)) {
+        for (const boroughData of Object.values(dateData.boroughs)) {
+            maxOffences = Math.max(maxOffences, boroughData.total_criminal_offences);
+        }
+    }
+    return maxOffences;
+}
+
+/**
+ * @param value {number}
+ * @returns {number}
+ */
+function getScale(value) {
+    const stringValue = value.toString();
+    const power = stringValue.length - 1;
+    return Math.pow(10, power);
+}
+
+/**
+ * @param value {number}
+ * @param scale {number}
+ * @returns {number}
+ */
+function roundUp(value, scale) {
+    return Math.ceil(value / scale) * scale;
 }
 
 /**
  * @param crimeData {CrimeData}
  * @param date {string}
+ * @param offencesUpperBound {number}
+ * @param timelineDateElement {HTMLElement}
  */
-function displayData(crimeData, date) {
+function updateData(
+    crimeData,
+    date,
+    offencesUpperBound,
+    timelineDateElement,
+) {
+    const dateObject = new Date(date);
+    const month = dateObject.toLocaleString("default", {month: "long"});
+    const year = dateObject.getFullYear();
+    timelineDateElement.innerHTML = `${month} ${year}`;
+    displayData(crimeData, date, offencesUpperBound);
+}
+
+/**
+ * @param crimeData {CrimeData}
+ * @param date {string}
+ * @param offencesUpperBound {number}
+ */
+function displayData(
+    crimeData,
+    date,
+    offencesUpperBound,
+) {
     const boroughCrimes = crimeData.dates[date].boroughs
-    const offencesUpperBound = 10000;
     for (const [borough, boroughData] of Object.entries(boroughCrimes)) {
         if (borough === "Unknown") {
             continue;

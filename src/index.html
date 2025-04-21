@@ -9,9 +9,26 @@
     <script src="script.js" type="module" async></script>
 </head>
 <body>
-<div class="container">
+<div class="center column">
+    <label id="timeline-slider-label" class="timeline-slider-label" for="timeline-slider">
+        Timeline
+    </label>
+    <p id="timeline-date" class="timeline-slider-label"></p>
+    <input
+        id="timeline-slider"
+        class="timeline-slider"
+        type="range"
+        min="0"
+        max="100"
+        value="0"
+    >
     <!-- Source: https://en.wikipedia.org/wiki/File:BlankMap-LondonBoroughs.svg -->
-    <svg id="london-map" xmlns="http://www.w3.org/2000/svg" width="962" height="744">
+    <svg
+        id="london-map"
+        class="london-map"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 962 744"
+    >
         <path
             id="havering"
             class="map-borough"

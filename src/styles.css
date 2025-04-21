@@ -3,11 +3,21 @@ body {
     padding: 0;
 }
 
-.container {
+.center {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+}
+
+.london-map {
+    max-width: 90%;
+    height: 80%;
 }
 
 .map-borough {
@@ -38,4 +48,15 @@ body {
     stroke-miterlimit: 4;
     stroke-dasharray: none;
     stroke-opacity: 1;
+}
+
+.timeline-slider {
+    width: 70%;
+    max-width: 1000px;
+    cursor: pointer;
+    margin: 10px;
+}
+
+.timeline-slider-label {
+    margin: 5px;
 }

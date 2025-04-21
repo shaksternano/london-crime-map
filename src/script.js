@@ -12,7 +12,10 @@ for (const [borough, boroughData] of Object.entries(boroughCrimes)) {
         continue;
     }
 
-    const boroughId = borough.replaceAll(" ", "-").toLowerCase();
+    let boroughId = borough.replaceAll(" ", "-").toLowerCase();
+    if (boroughId === "southwark") {
+        boroughId = "southwark-and-city-of-london";
+    }
     const boroughElement = document.getElementById(boroughId);
     if (boroughElement === null) {
         console.error(`Element with id ${boroughId} not found`);
@@ -23,9 +26,4 @@ for (const [borough, boroughData] of Object.entries(boroughCrimes)) {
     const colorValue = Math.floor(255 * (1 - ratio));
     const colorHex = colorValue.toString(16).padStart(2, "0");
     boroughElement.style.fill = `#ff${colorHex}${colorHex}`;
-
-    if (boroughId === "southwark") {
-        const cityOfLondonElement = document.getElementById("city-of-london");
-        cityOfLondonElement.style.fill = boroughElement.style.fill;
-    }
 }

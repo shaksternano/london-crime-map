@@ -160,7 +160,7 @@ function displayData(
 ) {
     const boroughCrimes = crimeData.dates[date].boroughs
     for (const [borough, boroughData] of Object.entries(boroughCrimes)) {
-        if (borough === "Unknown") {
+        if (borough === "unknown") {
             continue;
         }
 

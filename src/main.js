@@ -2,7 +2,36 @@
 
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
+/**
+ * @typedef {Object} CrimeData
+ * @property {number} total_criminal_offences
+ * @property {number} total_known_borough_criminal_offences
+ * @property {Object.<string, DateCrimeData>} dates
+ */
+
+/**
+ * @typedef {Object} DateCrimeData
+ * @property {number} total_criminal_offences
+ * @property {number} total_known_borough_criminal_offences
+ * @property {Object.<string, BoroughCrimeData>} boroughs
+ */
+
+/**
+ * @typedef {Object} BoroughCrimeData
+ * @property {number} total_criminal_offences
+ * @property {Object.<string, OffenceGroup>} offence_groups
+ */
+
+/**
+ * @typedef {Object} OffenceGroup
+ * @property {number} total_criminal_offences
+ * @property {Object.<string, number>} offence_subgroups
+ */
+
 async function main() {
+    /**
+     * @type {CrimeData}
+     */
     const crimeData = await fetch("./london-crime-data.json")
         .then(response => response.json());
 
@@ -21,7 +50,7 @@ async function main() {
 }
 
 /**
- * @param crimeData {object}
+ * @param crimeData {CrimeData}
  * @param date {string}
  * @param timelineDateElement {HTMLElement}
  */
@@ -34,7 +63,7 @@ function updateData(crimeData, date, timelineDateElement) {
 }
 
 /**
- * @param crimeData {object}
+ * @param crimeData {CrimeData}
  * @param date {string}
  */
 function displayData(crimeData, date) {

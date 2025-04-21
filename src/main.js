@@ -39,6 +39,8 @@ async function main() {
     const scale = getScale(maxOffences);
     const offencesUpperBound = roundUp(maxOffences, scale);
 
+    setLegend(offencesUpperBound);
+
     const dates = Object.keys(crimeData.dates);
     const timelineDateElement = document.getElementById("timeline-date");
 
@@ -87,6 +89,47 @@ function roundUp(value, scale) {
 }
 
 /**
+ * @param offencesUpperBound {number}
+ */
+function setLegend(offencesUpperBound) {
+    const mapLegendElement = document.getElementById("map-legend");
+    const legendTiers = 5;
+    for (let i = legendTiers; i > 0; i--) {
+        const ratio = i / legendTiers;
+        const previousRatio = (i - 1) / legendTiers;
+        const lowerBound = Math.round(offencesUpperBound * previousRatio);
+        const upperBound = Math.round(offencesUpperBound * ratio) - 1;
+        const label = `${lowerBound} – ${upperBound}`;
+        const color = getColor(ratio);
+
+        const legendTierColorElement = document.createElement("div");
+        legendTierColorElement.className = "map-legend-tier-color";
+        legendTierColorElement.style.backgroundColor = color;
+
+        const legendTierLabelElement = document.createElement("p");
+        legendTierLabelElement.innerHTML = label.toString();
+        legendTierLabelElement.className = "map-legend-tier-label";
+
+        const legendTierElement = document.createElement("div");
+        legendTierElement.className = "map-legend-tier";
+        legendTierElement.appendChild(legendTierColorElement);
+        legendTierElement.appendChild(legendTierLabelElement);
+
+        mapLegendElement.appendChild(legendTierElement);
+    }
+}
+
+/**
+ * @param ratio {number}
+ * @returns {string}
+ */
+function getColor(ratio) {
+    const colorValue = Math.floor(255 * (1 - ratio));
+    const colorHex = colorValue.toString(16).padStart(2, "0");
+    return `#ff${colorHex}${colorHex}`;
+}
+
+/**
  * @param crimeData {CrimeData}
  * @param date {string}
  * @param offencesUpperBound {number}
@@ -132,9 +175,7 @@ function displayData(
         }
 
         const ratio = boroughData.total_criminal_offences / offencesUpperBound;
-        const colorValue = Math.floor(255 * (1 - ratio));
-        const colorHex = colorValue.toString(16).padStart(2, "0");
-        boroughElement.style.fill = `#ff${colorHex}${colorHex}`;
+        boroughElement.style.fill = getColor(ratio);
     }
 }
 

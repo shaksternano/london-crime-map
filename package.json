@@ -5,10 +5,12 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "build": "vite build && tsx scripts/minify-json.ts",
         "preview": "vite preview"
     },
     "devDependencies": {
+        "@types/node": "^22.14.1",
+        "tsx": "^4.19.3",
         "vite": "^6.3.2"
     }
 }

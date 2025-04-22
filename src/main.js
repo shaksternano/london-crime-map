@@ -28,6 +28,12 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
  * @property {Object.<string, number>} offence_subgroups
  */
 
+/**
+ * @typedef {Object} OffenceInfo
+ * @property {number} maxOffences
+ * @property {string[]} offenceGroups
+ */
+
 const CAPITALIZE_EXCEPTIONS = [
     "a",
     "an",
@@ -42,15 +48,17 @@ const CAPITALIZE_EXCEPTIONS = [
 ]
 
 async function main() {
+    const crimeDataResponse = await fetch("./london-crime-data.json");
     /**
      * @type {CrimeData}
      */
-    const crimeData = await fetch("./london-crime-data.json")
-        .then(response => response.json());
+    const crimeData = await crimeDataResponse.json();
 
-    const maxOffences = getMaxOffences(crimeData);
-    const scale = getScale(maxOffences);
-    const offencesUpperBound = roundUp(maxOffences, scale);
+    const offenceInfo = getOffenceInfo(crimeData);
+    const scale = getScale(offenceInfo.maxOffences);
+    const offencesUpperBound = roundUp(offenceInfo.maxOffences, scale);
+
+    const pieColors = generatePieColors(offenceInfo.offenceGroups);
 
     setLegend(offencesUpperBound);
 
@@ -74,23 +82,30 @@ async function main() {
             if (boroughId === "southwark-and-city-of-london") {
                 boroughId = "southwark";
             }
-            displayBoroughData(crimeData, boroughId, date);
+            displayBoroughData(crimeData, boroughId, date, pieColors);
         }
     }
 }
 
 /**
  * @param crimeData {CrimeData}
- * @returns {number}
+ * @returns {OffenceInfo}
  */
-function getMaxOffences(crimeData) {
+function getOffenceInfo(crimeData) {
     let maxOffences = 0;
+    const offenceGroups = new Set();
     for (const dateData of Object.values(crimeData.dates)) {
         for (const boroughData of Object.values(dateData.boroughs)) {
             maxOffences = Math.max(maxOffences, boroughData.total_criminal_offences);
+            for (const offenceGroup of Object.keys(boroughData.offence_groups)) {
+                offenceGroups.add(offenceGroup);
+            }
         }
     }
-    return maxOffences;
+    return {
+        maxOffences,
+        offenceGroups: Array.from(offenceGroups),
+    };
 }
 
 /**
@@ -110,6 +125,37 @@ function getScale(value) {
  */
 function roundUp(value, scale) {
     return Math.ceil(value / scale) * scale;
+}
+
+/**
+ * @param categories {string[]}
+ * @returns {Object.<string, string>}
+ */
+function generatePieColors(categories) {
+    const colorMapping = {}
+    for (let i = 0; i < categories.length; i++) {
+        const category = categories[i];
+        const hue = Math.floor((360 / categories.length) * i);
+        colorMapping[category] = hslToHex(hue, 70, 50);
+    }
+    return colorMapping;
+}
+
+/**
+ * @param hue {number}
+ * @param saturation {number}
+ * @param lightness {number}
+ * @returns {string}
+ */
+function hslToHex(hue, saturation, lightness) {
+    lightness /= 100;
+    const a = saturation * Math.min(lightness, 1 - lightness) / 100;
+    const f = (n) => {
+        const k = (n + hue / 30) % 12;
+        const color = lightness - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
 }
 
 /**
@@ -209,8 +255,14 @@ function displayData(
  * @param crimeData {CrimeData}
  * @param boroughId {string}
  * @param date {string}
+ * @param pieColors {Object.<string, string>}
  */
-function displayBoroughData(crimeData, boroughId, date) {
+function displayBoroughData(
+    crimeData,
+    boroughId,
+    date,
+    pieColors,
+) {
     const boroughData = crimeData.dates[date].boroughs[boroughId];
     if (boroughData === undefined) {
         console.error(`Borough data for ${boroughId} on ${date} not found`);
@@ -237,15 +289,21 @@ function displayBoroughData(crimeData, boroughId, date) {
     const offenceGroupElement = document.getElementById("borough-offence-group");
     offenceGroupElement.textContent = "";
 
-    displayCrimePieChart(crimeData, boroughId, date);
+    displayCrimePieChart(crimeData, boroughId, date, pieColors);
 }
 
 /**
  * @param crimeData {CrimeData}
  * @param boroughId {string}
  * @param date {string}
+ * @param pieColors {Object.<string, string>}
  */
-function displayCrimePieChart(crimeData, boroughId, date) {
+function displayCrimePieChart(
+    crimeData,
+    boroughId,
+    date,
+    pieColors,
+) {
     const boroughData = crimeData.dates[date]
         .boroughs[boroughId]
         .offence_groups;
@@ -269,10 +327,6 @@ function displayCrimePieChart(crimeData, boroughId, date) {
         .append("g")
         .attr("transform", `translate(${translate}, ${translate})`);
 
-    const color = d3.scaleOrdinal()
-        .domain(processedBoroughData.map(d => d.offence))
-        .range(d3.schemePaired);
-
     const pie = d3.pie()
         .value(d => d.count);
 
@@ -293,7 +347,7 @@ function displayCrimePieChart(crimeData, boroughId, date) {
         .attr("id", d => d.data.offence)
         .attr("class", "borough-info-pie-chart-sector")
         .attr("d", arc)
-        .attr("fill", d => color(d.data.offence))
+        .attr("fill", d => pieColors[d.data.offence])
         .on("mouseover", function () {
             const offenceGroupArc = d3.select(this);
 

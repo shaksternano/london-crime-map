@@ -248,8 +248,13 @@ function updateData(
     const dateObject = new Date(date);
     const month = dateObject.toLocaleString("default", {month: "long"});
     const year = dateObject.getFullYear();
+
     const timelineDateElement = document.getElementById("timeline-date");
     timelineDateElement.innerHTML = `${month} ${year}`;
+
+    const totalOffencesElement = document.getElementById("total-offences");
+    totalOffencesElement.innerHTML = `Total criminal offences in London in ${month} ${year}: ${crimeData.dates[date].total_criminal_offences}`;
+
     displayData(crimeData, date, offencesUpperBound);
 }
 

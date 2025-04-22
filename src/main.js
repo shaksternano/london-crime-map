@@ -68,22 +68,22 @@ async function main() {
 
     let selectedBorough = "";
 
-    const timelineSlider = document.getElementById("timeline-slider");
-    timelineSlider.max = dates.length - 1;
-    timelineSlider.value = 0;
+    const timelineSliderSelection = d3.select("#timeline-slider")
+        .attr("max", dates.length - 1)
+        .attr("value", 0)
 
     let selectedOffenceGroup = "";
-    const offenceGroupElement = document.getElementById("borough-offence-group");
     const updateSelectedOffenceGroup = (offenceGroup) => {
         selectedOffenceGroup = offenceGroup;
-        const date = dates[timelineSlider.value];
+        const date = dates[timelineSliderSelection.attr("value")];
         const boroughData = crimeData.dates[date]
             .boroughs[selectedBorough]
             .offence_groups;
-        offenceGroupElement.innerHTML = `${offenceGroup}: ${boroughData[offenceGroup].total_criminal_offences}`;
+        d3.select("#borough-offence-group")
+            .text(`${offenceGroup}: ${boroughData[offenceGroup].total_criminal_offences}`);
     };
 
-    timelineSlider.oninput = (event) => {
+    timelineSliderSelection.on("input", function (event) {
         const date = dates[event.target.value];
         updateData(crimeData, date, offencesUpperBound);
         if (selectedBorough !== "") {
@@ -98,14 +98,14 @@ async function main() {
         if (selectedOffenceGroup !== "") {
             updateSelectedOffenceGroup(selectedOffenceGroup);
         }
-    };
+    });
 
     let setPieLegend = false;
-    const mapElement = document.getElementById("map");
-    for (const boroughElement of mapElement.children) {
-        boroughElement.onclick = () => {
-            const date = dates[timelineSlider.value];
-            let boroughId = boroughElement.id;
+    d3.select("#boroughs")
+        .selectChildren()
+        .on("click", function () {
+            const date = dates[timelineSliderSelection.attr("value")];
+            let boroughId = this.id;
             if (boroughId === "southwark-and-city-of-london") {
                 boroughId = "southwark";
             }
@@ -121,8 +121,7 @@ async function main() {
                 setOffenceGroupsLegend(pieColors);
                 setPieLegend = true;
             }
-        }
-    }
+        });
 }
 
 /**
@@ -206,7 +205,6 @@ function hslToHex(hue, saturation, lightness) {
  * @param offencesUpperBound {number}
  */
 function setMapLegend(offencesUpperBound) {
-    const legendElement = document.getElementById("map-legend");
     const legendTiers = 5;
     for (let i = legendTiers; i > 0; i--) {
         const ratio = i / legendTiers;
@@ -219,30 +217,25 @@ function setMapLegend(offencesUpperBound) {
         const label = `${lowerBound} – ${upperBound}`;
         const color = getColor(ratio);
 
-        addLegendTier(color, label, legendElement);
+        addLegendTier(color, label, "map-legend");
     }
 }
 
 /**
  * @param color {string}
  * @param label {string}
- * @param legendElement {HTMLElement}
+ * @param legendId {string}
  */
-function addLegendTier(color, label, legendElement) {
-    const legendTierColorElement = document.createElement("div");
-    legendTierColorElement.className = "legend-tier-color";
-    legendTierColorElement.style.backgroundColor = color;
-
-    const legendTierLabelElement = document.createElement("p");
-    legendTierLabelElement.innerHTML = label;
-    legendTierLabelElement.className = "legend-tier-label";
-
-    const legendTierElement = document.createElement("div");
-    legendTierElement.className = "legend-tier";
-    legendTierElement.appendChild(legendTierColorElement);
-    legendTierElement.appendChild(legendTierLabelElement);
-
-    legendElement.appendChild(legendTierElement);
+function addLegendTier(color, label, legendId) {
+    const legendSelection = d3.select(`#${legendId}`)
+        .append("div")
+        .attr("class", "legend-tier");
+    legendSelection.append("div")
+        .attr("class", "legend-tier-color")
+        .style("background-color", color);
+    legendSelection.append("p")
+        .attr("class", "legend-tier-label")
+        .text(label);
 }
 
 /**
@@ -269,11 +262,10 @@ function updateData(
     const month = dateObject.toLocaleString("default", {month: "long"});
     const year = dateObject.getFullYear();
 
-    const timelineDateElement = document.getElementById("timeline-date");
-    timelineDateElement.innerHTML = `${month} ${year}`;
-
-    const totalOffencesElement = document.getElementById("total-offences");
-    totalOffencesElement.innerHTML = `Total criminal offences in London in ${month} ${year}: ${crimeData.dates[date].total_criminal_offences}`;
+    d3.select("#timeline-date")
+        .text(`${month} ${year}`);
+    d3.select("#total-offences")
+        .text(`Total criminal offences in London in ${month} ${year}: ${crimeData.dates[date].total_criminal_offences}`);
 
     displayData(crimeData, date, offencesUpperBound);
 }
@@ -289,24 +281,17 @@ function displayData(
     offencesUpperBound,
 ) {
     const boroughCrimes = crimeData.dates[date].boroughs;
-    for (const [borough, boroughData] of Object.entries(boroughCrimes)) {
-        if (borough === "unknown") {
-            continue;
-        }
-
-        let boroughId = borough.replaceAll(" ", "-").toLowerCase();
-        if (boroughId === "southwark") {
-            boroughId = "southwark-and-city-of-london";
-        }
-        const boroughElement = document.getElementById(boroughId);
-        if (boroughElement === null) {
-            console.error(`Element with id ${boroughId} not found`);
-            continue;
-        }
-
-        const ratio = boroughData.total_criminal_offences / offencesUpperBound;
-        boroughElement.style.fill = getColor(ratio);
-    }
+    d3.select("#boroughs")
+        .selectChildren()
+        .style("fill", function () {
+            let boroughId = this.id;
+            if (boroughId === "southwark-and-city-of-london") {
+                boroughId = "southwark";
+            }
+            const boroughData = boroughCrimes[boroughId];
+            const ratio = boroughData.total_criminal_offences / offencesUpperBound;
+            return getColor(ratio);
+        });
 }
 
 /**
@@ -343,8 +328,8 @@ function displayBoroughData(
     const month = dateObject.toLocaleString("default", {month: "long"});
     const year = dateObject.getFullYear();
 
-    const boroughOffenceCountElement = document.getElementById("borough-offence-count");
-    boroughOffenceCountElement.innerHTML = `Criminal offences in ${boroughName} in ${month} ${year}: ${offences}`;
+    d3.select("#borough-offence-count")
+        .text(`Criminal offences in ${boroughName} in ${month} ${year}: ${offences}`);
 
     displayCrimePieChart(
         crimeData,
@@ -435,9 +420,8 @@ function displayCrimePieChart(
  * @param pieColors {Object.<string, string>}
  */
 function setOffenceGroupsLegend(pieColors) {
-    const legendElement = document.getElementById("offence-groups-legend");
     for (const [offenceGroup, color] of Object.entries(pieColors)) {
-        addLegendTier(color, offenceGroup, legendElement);
+        addLegendTier(color, offenceGroup, "offence-groups-legend");
     }
 }
 

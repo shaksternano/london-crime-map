@@ -234,6 +234,9 @@ function displayBoroughData(crimeData, boroughId, date) {
     const boroughOffenceCountElement = document.getElementById("borough-offence-count");
     boroughOffenceCountElement.innerHTML = `Criminal offences in ${boroughName} in ${month} ${year}: ${offences}`;
 
+    const offenceGroupElement = document.getElementById("borough-offence-group");
+    offenceGroupElement.textContent = "";
+
     displayCrimePieChart(crimeData, boroughId, date);
 }
 
@@ -281,18 +284,28 @@ function displayCrimePieChart(crimeData, boroughId, date) {
         .innerRadius(0)
         .outerRadius(radius * hoverSizeIncrease)
 
+    const offenceGroupElement = d3.select("#borough-offence-group")
+
     svg.selectAll("path")
         .data(pie(processedBoroughData))
         .enter()
         .append("path")
+        .attr("id", d => d.data.offence)
+        .attr("class", "borough-info-pie-chart-sector")
         .attr("d", arc)
         .attr("fill", d => color(d.data.offence))
         .on("mouseover", function () {
-            d3.select(this).transition()
+            const offenceGroupArc = d3.select(this);
+
+            offenceGroupArc.transition()
                 .duration(100)
                 .ease(d3.easeQuadOut)
                 .attr("d", hoverArc);
-        }).on("mouseout", function () {
+
+            const offenceGroup = offenceGroupArc.attr("id");
+            offenceGroupElement.text(`${offenceGroup}: ${boroughData[offenceGroup].total_criminal_offences}`);
+        })
+        .on("mouseout", function () {
             d3.select(this).transition()
                 .duration(400)
                 .ease(d3.easeBounceOut)

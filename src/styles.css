@@ -108,3 +108,11 @@ body, p {
 .borough-info {
     gap: 10px;
 }
+
+.borough-info-pie-chart-sector {
+    transition: 0.1s ease;
+}
+
+.borough-info-pie-chart-sector:hover {
+    filter: brightness(90%);
+}

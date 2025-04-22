@@ -45,7 +45,7 @@ const CAPITALIZE_EXCEPTIONS = [
     "the",
     "to",
     "with",
-]
+];
 
 async function main() {
     const crimeDataResponse = await fetch("./london-crime-data.json");
@@ -68,14 +68,13 @@ async function main() {
 
     let selectedBorough = "";
 
-    const timelineSliderSelection = d3.select("#timeline-slider")
-        .attr("max", dates.length - 1)
-        .attr("value", 0)
+    const timelineSliderElement = document.getElementById("timeline-slider");
+    timelineSliderElement.max = dates.length - 1;
 
     let selectedOffenceGroup = "";
     const updateSelectedOffenceGroup = (offenceGroup) => {
         selectedOffenceGroup = offenceGroup;
-        const date = dates[timelineSliderSelection.attr("value")];
+        const date = dates[timelineSliderElement.value];
         const boroughData = crimeData.dates[date]
             .boroughs[selectedBorough]
             .offence_groups;
@@ -83,7 +82,8 @@ async function main() {
             .text(`${offenceGroup}: ${boroughData[offenceGroup].total_criminal_offences}`);
     };
 
-    timelineSliderSelection.on("input", function (event) {
+    timelineSliderElement.oninput = (event) => {
+        // noinspection JSUnresolvedReference
         const date = dates[event.target.value];
         updateData(crimeData, date, offencesUpperBound);
         if (selectedBorough !== "") {
@@ -98,13 +98,13 @@ async function main() {
         if (selectedOffenceGroup !== "") {
             updateSelectedOffenceGroup(selectedOffenceGroup);
         }
-    });
+    };
 
     let setPieLegend = false;
     d3.select("#boroughs")
         .selectChildren()
         .on("click", function () {
-            const date = dates[timelineSliderSelection.attr("value")];
+            const date = dates[timelineSliderElement.value];
             let boroughId = this.id;
             if (boroughId === "southwark-and-city-of-london") {
                 boroughId = "southwark";
@@ -117,6 +117,9 @@ async function main() {
                 pieColors,
                 updateSelectedOffenceGroup,
             );
+            if (selectedOffenceGroup !== "") {
+                updateSelectedOffenceGroup(selectedOffenceGroup);
+            }
             if (!setPieLegend) {
                 setOffenceGroupsLegend(pieColors);
                 setPieLegend = true;
@@ -185,6 +188,7 @@ function generatePieColors(categories) {
 }
 
 /**
+ * Source: https://stackoverflow.com/a/44134328
  * @param hue {number}
  * @param saturation {number}
  * @param lightness {number}
@@ -196,7 +200,7 @@ function hslToHex(hue, saturation, lightness) {
     const f = (n) => {
         const k = (n + hue / 30) % 12;
         const color = lightness - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-        return Math.round(255 * color).toString(16).padStart(2, '0');
+        return Math.round(255 * color).toString(16).padStart(2, "0");
     };
     return `#${f(0)}${f(8)}${f(4)}`;
 }
@@ -216,7 +220,6 @@ function setMapLegend(offencesUpperBound) {
         }
         const label = `${lowerBound} – ${upperBound}`;
         const color = getColor(ratio);
-
         addLegendTier(color, label, "map-legend");
     }
 }
@@ -377,6 +380,7 @@ function displayCrimePieChart(
         .append("g")
         .attr("transform", `translate(${translate}, ${translate})`);
 
+    // noinspection JSUnresolvedReference
     const pie = d3.pie()
         .value(d => d.count)
         .sort((a, b) => d3.ascending(a.offence, b.offence));
@@ -400,6 +404,7 @@ function displayCrimePieChart(
         .on("mouseover", function () {
             const offenceGroupArc = d3.select(this);
 
+            // noinspection JSUnresolvedReference
             offenceGroupArc.transition()
                 .duration(100)
                 .ease(d3.easeQuadOut)
@@ -409,6 +414,7 @@ function displayCrimePieChart(
             updateSelectedOffenceGroup(offenceGroup);
         })
         .on("mouseout", function () {
+            // noinspection JSUnresolvedReference
             d3.select(this).transition()
                 .duration(400)
                 .ease(d3.easeBounceOut)

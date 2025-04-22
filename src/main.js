@@ -100,6 +100,7 @@ async function main() {
         }
     };
 
+    let setPieLegend = false;
     const mapElement = document.getElementById("map");
     for (const boroughElement of mapElement.children) {
         boroughElement.onclick = () => {
@@ -116,6 +117,10 @@ async function main() {
                 pieColors,
                 updateSelectedOffenceGroup,
             );
+            if (!setPieLegend) {
+                setOffenceGroupsLegend(pieColors);
+                setPieLegend = true;
+            }
         }
     }
 }
@@ -348,8 +353,6 @@ function displayBoroughData(
         pieColors,
         updateSelectedOffenceGroup,
     );
-
-    setOffenceGroupsLegend(pieColors);
 }
 
 /**

@@ -321,7 +321,7 @@ function displayCrimePieChart(
                 offence: offenceGroup,
                 count: offenceGroupData.total_criminal_offences,
             }
-        })
+        });
 
     const width = 200;
     const hoverSizeIncrease = 1.1;
@@ -335,7 +335,8 @@ function displayCrimePieChart(
         .attr("transform", `translate(${translate}, ${translate})`);
 
     const pie = d3.pie()
-        .value(d => d.count);
+        .value(d => d.count)
+        .sort((a, b) => d3.ascending(a.offence, b.offence));
 
     const arc = d3.arc()
         .innerRadius(0)

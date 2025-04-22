@@ -73,7 +73,7 @@ async function main() {
     timelineSlider.value = 0;
 
     let selectedOffenceGroup = "";
-    const offenceGroupElement = document.getElementById("borough-offence-group")
+    const offenceGroupElement = document.getElementById("borough-offence-group");
     const updateSelectedOffenceGroup = (offenceGroup) => {
         selectedOffenceGroup = offenceGroup;
         const date = dates[timelineSlider.value];
@@ -81,7 +81,7 @@ async function main() {
             .boroughs[selectedBorough]
             .offence_groups;
         offenceGroupElement.innerHTML = `${offenceGroup}: ${boroughData[offenceGroup].total_criminal_offences}`;
-    }
+    };
 
     timelineSlider.oninput = (event) => {
         const date = dates[event.target.value];
@@ -98,7 +98,7 @@ async function main() {
         if (selectedOffenceGroup !== "") {
             updateSelectedOffenceGroup(selectedOffenceGroup);
         }
-    }
+    };
 
     const mapElement = document.getElementById("map");
     for (const boroughElement of mapElement.children) {
@@ -165,7 +165,7 @@ function roundUp(value, scale) {
  * @returns {Object.<string, string>}
  */
 function generatePieColors(categories) {
-    const colorMapping = {}
+    const colorMapping = {};
     for (let i = 0; i < categories.length; i++) {
         const category = categories[i];
         const hue = Math.floor((360 / categories.length) * i);
@@ -186,7 +186,7 @@ function hslToHex(hue, saturation, lightness) {
     const f = (n) => {
         const k = (n + hue / 30) % 12;
         const color = lightness - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-        return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
+        return Math.round(255 * color).toString(16).padStart(2, '0');
     };
     return `#${f(0)}${f(8)}${f(4)}`;
 }
@@ -268,7 +268,7 @@ function displayData(
     date,
     offencesUpperBound,
 ) {
-    const boroughCrimes = crimeData.dates[date].boroughs
+    const boroughCrimes = crimeData.dates[date].boroughs;
     for (const [borough, boroughData] of Object.entries(boroughCrimes)) {
         if (borough === "unknown") {
             continue;
@@ -281,7 +281,7 @@ function displayData(
         const boroughElement = document.getElementById(boroughId);
         if (boroughElement === null) {
             console.error(`Element with id ${boroughId} not found`);
-            continue
+            continue;
         }
 
         const ratio = boroughData.total_criminal_offences / offencesUpperBound;
@@ -358,7 +358,7 @@ function displayCrimePieChart(
             return {
                 offence: offenceGroup,
                 count: offenceGroupData.total_criminal_offences,
-            }
+            };
         });
 
     const width = 200;
@@ -382,7 +382,7 @@ function displayCrimePieChart(
 
     const hoverArc = d3.arc()
         .innerRadius(0)
-        .outerRadius(radius * hoverSizeIncrease)
+        .outerRadius(radius * hoverSizeIncrease);
 
     svg.selectAll("path")
         .data(pie(processedBoroughData))
@@ -408,7 +408,7 @@ function displayCrimePieChart(
                 .duration(400)
                 .ease(d3.easeBounceOut)
                 .attr("d", arc);
-        })
+        });
 }
 
 // noinspection JSIgnoredPromiseFromCall

@@ -66,12 +66,18 @@ async function main() {
 
     updateData(crimeData, dates[0], offencesUpperBound);
 
+    let selectedBorough = "";
+
     const timelineSlider = document.getElementById("timeline-slider");
     timelineSlider.max = dates.length - 1;
     timelineSlider.value = 0;
     timelineSlider.oninput = (event) => {
         const date = dates[event.target.value];
         updateData(crimeData, date, offencesUpperBound);
+
+        if (selectedBorough !== "") {
+            displayBoroughData(crimeData, selectedBorough, date, pieColors);
+        }
     }
 
     const mapElement = document.getElementById("map");
@@ -82,6 +88,7 @@ async function main() {
             if (boroughId === "southwark-and-city-of-london") {
                 boroughId = "southwark";
             }
+            selectedBorough = boroughId;
             displayBoroughData(crimeData, boroughId, date, pieColors);
         }
     }

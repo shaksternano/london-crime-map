@@ -81,25 +81,25 @@ body, p {
     gap: 10px;
 }
 
-.map-legend-title {
+.legend-title {
     width: fit-content;
 }
 
-.map-legend-tier {
+.legend-tier {
     display: flex;
     align-items: center;
     width: fit-content;
     gap: 5px;
 }
 
-.map-legend-tier-color {
+.legend-tier-color {
     border-style: solid;
     border-width: thin;
     width: 20px;
     height: 20px;
 }
 
-.map-legend-tier-label {
+.legend-tier-label {
     white-space: nowrap;
     width: auto;
     display: inline-block;
@@ -117,6 +117,10 @@ body, p {
 
 .borough-info-pie-chart-sector:hover {
     filter: brightness(90%);
+}
+
+.borough-info-pie-chart-legend {
+    gap: 2px;
 }
 
 .github-container {

@@ -60,7 +60,7 @@ async function main() {
 
     const pieColors = generatePieColors(offenceInfo.offenceGroups);
 
-    setLegend(offencesUpperBound);
+    setMapLegend(offencesUpperBound);
 
     const dates = Object.keys(crimeData.dates);
 
@@ -171,7 +171,13 @@ function generatePieColors(categories) {
         const hue = Math.floor((360 / categories.length) * i);
         colorMapping[category] = hslToHex(hue, 70, 50);
     }
-    return colorMapping;
+    return Object.keys(colorMapping).sort().reduce(
+        (obj, key) => {
+            obj[key] = colorMapping[key];
+            return obj;
+        },
+        {},
+    );
 }
 
 /**
@@ -194,8 +200,8 @@ function hslToHex(hue, saturation, lightness) {
 /**
  * @param offencesUpperBound {number}
  */
-function setLegend(offencesUpperBound) {
-    const mapLegendElement = document.getElementById("map-legend");
+function setMapLegend(offencesUpperBound) {
+    const legendElement = document.getElementById("map-legend");
     const legendTiers = 5;
     for (let i = legendTiers; i > 0; i--) {
         const ratio = i / legendTiers;
@@ -208,21 +214,30 @@ function setLegend(offencesUpperBound) {
         const label = `${lowerBound} – ${upperBound}`;
         const color = getColor(ratio);
 
-        const legendTierColorElement = document.createElement("div");
-        legendTierColorElement.className = "map-legend-tier-color";
-        legendTierColorElement.style.backgroundColor = color;
-
-        const legendTierLabelElement = document.createElement("p");
-        legendTierLabelElement.innerHTML = label.toString();
-        legendTierLabelElement.className = "map-legend-tier-label";
-
-        const legendTierElement = document.createElement("div");
-        legendTierElement.className = "map-legend-tier";
-        legendTierElement.appendChild(legendTierColorElement);
-        legendTierElement.appendChild(legendTierLabelElement);
-
-        mapLegendElement.appendChild(legendTierElement);
+        addLegendTier(color, label, legendElement);
     }
+}
+
+/**
+ * @param color {string}
+ * @param label {string}
+ * @param legendElement {HTMLElement}
+ */
+function addLegendTier(color, label, legendElement) {
+    const legendTierColorElement = document.createElement("div");
+    legendTierColorElement.className = "legend-tier-color";
+    legendTierColorElement.style.backgroundColor = color;
+
+    const legendTierLabelElement = document.createElement("p");
+    legendTierLabelElement.innerHTML = label;
+    legendTierLabelElement.className = "legend-tier-label";
+
+    const legendTierElement = document.createElement("div");
+    legendTierElement.className = "legend-tier";
+    legendTierElement.appendChild(legendTierColorElement);
+    legendTierElement.appendChild(legendTierLabelElement);
+
+    legendElement.appendChild(legendTierElement);
 }
 
 /**
@@ -333,6 +348,8 @@ function displayBoroughData(
         pieColors,
         updateSelectedOffenceGroup,
     );
+
+    setOffenceGroupsLegend(pieColors);
 }
 
 /**
@@ -409,6 +426,16 @@ function displayCrimePieChart(
                 .ease(d3.easeBounceOut)
                 .attr("d", arc);
         });
+}
+
+/**
+ * @param pieColors {Object.<string, string>}
+ */
+function setOffenceGroupsLegend(pieColors) {
+    const legendElement = document.getElementById("offence-groups-legend");
+    for (const [offenceGroup, color] of Object.entries(pieColors)) {
+        addLegendTier(color, offenceGroup, legendElement);
+    }
 }
 
 // noinspection JSIgnoredPromiseFromCall

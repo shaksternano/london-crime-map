@@ -184,13 +184,18 @@ function generatePieColors(categories) {
 function setMapLegend(offencesUpperBound) {
     const minValue = 0;
     const maxValue = offencesUpperBound;
-    const width = 50;
+
+    const width = 55;
     const height = 200;
+
+    const legendBarWidth = 20;
+    const fontSize = 15;
+
     const margin = {
         top: 10,
         bottom: 10,
         left: 0,
-        right: 30,
+        right: 35,
     };
 
     // noinspection JSUnresolvedReference
@@ -221,7 +226,6 @@ function setMapLegend(offencesUpperBound) {
         .attr("offset", d => d.offset)
         .attr("stop-color", d => d.color);
 
-    const legendBarWidth = 20;
     svg.append("rect")
         .attr("x", width - margin.right - legendBarWidth)
         .attr("y", margin.top)
@@ -241,7 +245,9 @@ function setMapLegend(offencesUpperBound) {
 
     svg.append("g")
         .attr("transform", `translate(${width - margin.right}, 0)`)
-        .call(axis);
+        .call(axis)
+        .selectAll("text")
+        .style("font-size", `${fontSize}px`);
 }
 
 /**

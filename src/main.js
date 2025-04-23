@@ -183,43 +183,73 @@ function generatePieColors(categories) {
  * @param offencesUpperBound {number}
  */
 function setMapLegend(offencesUpperBound) {
-    const legendTiers = 5;
-    for (let i = legendTiers; i > 0; i--) {
-        const ratio = i / legendTiers;
-        const previousRatio = (i - 1) / legendTiers;
-        const lowerBound = Math.round(offencesUpperBound * previousRatio);
-        let upperBound = Math.round(offencesUpperBound * ratio);
-        if (i !== legendTiers) {
-            upperBound--;
-        }
-        const label = `${lowerBound} – ${upperBound}`;
-        const color = getColor(ratio);
-        addLegendTier(color, label, "map-legend");
-    }
-}
+    const minValue = 0;
+    const maxValue = offencesUpperBound;
+    const width = 50;
+    const height = 200;
+    const margin = {
+        top: 10,
+        bottom: 10,
+        left: 0,
+        right: 30,
+    };
 
-/**
- * @param color {string}
- * @param label {string}
- * @param legendId {string}
- */
-function addLegendTier(color, label, legendId) {
-    const legendSelection = d3.select(`#${legendId}`)
-        .append("div")
-        .attr("class", "legend-tier");
-    legendSelection.append("div")
-        .attr("class", "legend-tier-color")
-        .style("background-color", color);
-    legendSelection.append("p")
-        .attr("class", "legend-tier-label")
-        .text(label);
+    // noinspection JSUnresolvedReference
+    const colorScale = d3.scaleSequential([minValue, maxValue], getMapColor);
+
+    const svg = d3.select("#map-legend")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const defs = svg.append("defs");
+    const linearGradient = defs.append("linearGradient")
+        .attr("id", "legend-gradient")
+        .attr("x1", "0%")
+        .attr("x2", "0%")
+        .attr("y1", "100%")
+        .attr("y2", "0%");
+
+    linearGradient.selectAll("stop")
+        .data(
+            d3.range(0, 1.01, 0.01).map(t => ({
+                offset: `${t * 100}%`,
+                color: colorScale(minValue + t * (maxValue - minValue))
+            }))
+        )
+        .enter()
+        .append("stop")
+        .attr("offset", d => d.offset)
+        .attr("stop-color", d => d.color);
+
+    const legendBarWidth = 20;
+    svg.append("rect")
+        .attr("x", width - margin.right - legendBarWidth)
+        .attr("y", margin.top)
+        .attr("width", legendBarWidth)
+        .attr("height", height - margin.top - margin.bottom)
+        .style("fill", "url(#legend-gradient)");
+
+    // noinspection JSUnresolvedReference
+    const axisScale = d3.scaleLinear()
+        .domain([minValue, maxValue])
+        .range([height - margin.bottom, margin.top]);
+
+    // noinspection JSUnresolvedReference
+    const axis = d3.axisRight(axisScale)
+        .ticks(5)
+        .tickFormat(d3.format("~s"));
+
+    svg.append("g")
+        .attr("transform", `translate(${width - margin.right}, 0)`)
+        .call(axis);
 }
 
 /**
  * @param ratio {number}
  * @returns {string}
  */
-function getColor(ratio) {
+function getMapColor(ratio) {
     const colorValue = Math.floor(255 * (1 - ratio));
     const colorHex = colorValue.toString(16).padStart(2, "0");
     return `#ff${colorHex}${colorHex}`;
@@ -267,7 +297,7 @@ function displayData(
             }
             const boroughData = boroughCrimes[boroughId];
             const ratio = boroughData.total_criminal_offences / offencesUpperBound;
-            return getColor(ratio);
+            return getMapColor(ratio);
         });
 }
 
@@ -409,6 +439,23 @@ function setOffenceGroupsLegend(pieColors) {
     for (const [offenceGroup, color] of Object.entries(pieColors)) {
         addLegendTier(color, offenceGroup, "offence-groups-legend");
     }
+}
+
+/**
+ * @param color {string}
+ * @param label {string}
+ * @param legendId {string}
+ */
+function addLegendTier(color, label, legendId) {
+    const legendSelection = d3.select(`#${legendId}`)
+        .append("div")
+        .attr("class", "legend-tier");
+    legendSelection.append("div")
+        .attr("class", "legend-tier-color")
+        .style("background-color", color);
+    legendSelection.append("p")
+        .attr("class", "legend-tier-label")
+        .text(label);
 }
 
 // noinspection JSIgnoredPromiseFromCall

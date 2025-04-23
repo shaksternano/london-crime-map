@@ -92,6 +92,7 @@ p {
     width: fit-content;
     margin-left: auto;
     margin-right: 0;
+    align-items: center;
     gap: 10px;
 }
 

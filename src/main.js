@@ -144,7 +144,7 @@ function getOffenceInfo(crimeData) {
     }
     return {
         maxOffences,
-        offenceGroups: Array.from(offenceGroups),
+        offenceGroups: Array.from(offenceGroups).sort(),
     };
 }
 
@@ -175,34 +175,11 @@ function generatePieColors(categories) {
     const colorMapping = {};
     for (let i = 0; i < categories.length; i++) {
         const category = categories[i];
-        const hue = Math.floor((360 / categories.length) * i);
-        colorMapping[category] = hslToHex(hue, 70, 50);
+        // Add 1 to the index to avoid the starting black color
+        // noinspection JSUnresolvedReference
+        colorMapping[category] = d3.interpolateTurbo((i + 1) / (categories.length + 1));
     }
-    return Object.keys(colorMapping).sort().reduce(
-        (obj, key) => {
-            obj[key] = colorMapping[key];
-            return obj;
-        },
-        {},
-    );
-}
-
-/**
- * Source: https://stackoverflow.com/a/44134328
- * @param hue {number}
- * @param saturation {number}
- * @param lightness {number}
- * @returns {string}
- */
-function hslToHex(hue, saturation, lightness) {
-    lightness /= 100;
-    const a = saturation * Math.min(lightness, 1 - lightness) / 100;
-    const f = (n) => {
-        const k = (n + hue / 30) % 12;
-        const color = lightness - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-        return Math.round(255 * color).toString(16).padStart(2, "0");
-    };
-    return `#${f(0)}${f(8)}${f(4)}`;
+    return colorMapping;
 }
 
 /**
@@ -401,6 +378,8 @@ function displayCrimePieChart(
         .attr("class", "borough-info-pie-chart-sector")
         .attr("d", arc)
         .attr("fill", d => pieColors[d.data.offence])
+        .attr("stroke", "black")
+        .style("stroke-width", "1px")
         .on("mouseover", function () {
             const offenceGroupArc = d3.select(this);
 

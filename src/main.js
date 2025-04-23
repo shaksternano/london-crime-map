@@ -49,11 +49,10 @@ const CAPITALIZE_EXCEPTIONS = [
 ];
 
 async function main() {
-    const crimeDataResponse = await fetch("./london-crime-data.json");
     /**
      * @type {CrimeData}
      */
-    const crimeData = await crimeDataResponse.json();
+    const crimeData = await d3.json("london-crime-data.json");
 
     const offenceInfo = getOffenceInfo(crimeData);
     const scale = getScale(offenceInfo.maxOffences);

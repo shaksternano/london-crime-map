@@ -34,7 +34,7 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
  * @property {string[]} offenceGroups
  */
 
-const THE_CITY_OF_LONDON_AND_SOUTHWARK_ID = "the-city-of-london-and-southwark";
+const CITY_OF_LONDON_ID = "city-of-london";
 const CAPITALIZE_EXCEPTIONS = [
     "a",
     "an",
@@ -49,10 +49,14 @@ const CAPITALIZE_EXCEPTIONS = [
 ];
 
 async function main() {
+    // Source: https://github.com/radoi90/housequest-data/blob/master/london_boroughs.geojson
+    const geoJsonPromise = await d3.json("london-boroughs.geojson");
     /**
      * @type {CrimeData}
      */
     const crimeData = await d3.json("london-crime-data.json");
+
+    drawMap(await geoJsonPromise);
 
     const offenceInfo = getOffenceInfo(crimeData);
     const scale = getScale(offenceInfo.maxOffences);
@@ -101,7 +105,7 @@ async function main() {
     };
 
     let setPieLegend = false;
-    d3.select("#boroughs")
+    d3.select("#map")
         .selectChildren()
         .on("click", function () {
             selectedBorough = this.id;
@@ -121,6 +125,29 @@ async function main() {
                 setPieLegend = true;
             }
         });
+}
+
+/**
+ * @param geoJson {Object}
+ */
+function drawMap(geoJson) {
+    const width = 500;
+    const height = 250;
+
+    // noinspection JSUnresolvedReference
+    const projection = d3.geoIdentity().reflectY(true).fitSize([width, height], geoJson);
+    // noinspection JSUnresolvedReference
+    const path = d3.geoPath(projection);
+
+    d3.select("#map")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "none")
+        .selectAll("path")
+        .data(geoJson.features)
+        .join("path")
+        .attr("id", d => d.properties.name.toLowerCase().replaceAll(" ", "-"))
+        .attr("class", "map-borough")
+        .attr("d", path);
 }
 
 /**
@@ -293,14 +320,18 @@ function displayData(
     offencesUpperBound,
 ) {
     const boroughCrimes = crimeData.dates[date].boroughs;
-    d3.select("#boroughs")
+    d3.select("#map")
         .selectChildren()
         .style("fill", function () {
             let boroughId = this.id;
-            if (boroughId === THE_CITY_OF_LONDON_AND_SOUTHWARK_ID) {
+            if (boroughId === CITY_OF_LONDON_ID) {
                 boroughId = "southwark";
             }
             const boroughData = boroughCrimes[boroughId];
+            if (boroughData === undefined) {
+                console.error(`Borough data for ${boroughId} on ${date} not found`);
+                return "#ffffff";
+            }
             const ratio = boroughData.total_criminal_offences / offencesUpperBound;
             return getMapColor(ratio);
         });
@@ -321,7 +352,7 @@ function displayBoroughData(
     updateSelectedOffenceGroup,
 ) {
     let fixedBoroughId = boroughId;
-    if (fixedBoroughId === THE_CITY_OF_LONDON_AND_SOUTHWARK_ID) {
+    if (fixedBoroughId === CITY_OF_LONDON_ID) {
         fixedBoroughId = "southwark";
     }
     const boroughData = crimeData.dates[date].boroughs[fixedBoroughId];
@@ -330,15 +361,20 @@ function displayBoroughData(
         return;
     }
     const offences = boroughData.total_criminal_offences;
-    const boroughName = boroughId.replaceAll("-", " ")
-        .split(" ")
-        .map(word => {
-            if (CAPITALIZE_EXCEPTIONS.includes(word)) {
-                return word;
-            }
-            return word.charAt(0).toUpperCase() + word.slice(1);
-        })
-        .join(" ");
+    let boroughName;
+    if (boroughId === CITY_OF_LONDON_ID || boroughId === "southwark") {
+        boroughName = "the City of London and Southwark";
+    } else {
+        boroughName = boroughId.replaceAll("-", " ")
+            .split(" ")
+            .map(word => {
+                if (CAPITALIZE_EXCEPTIONS.includes(word)) {
+                    return word;
+                }
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            })
+            .join(" ");
+    }
 
     const dateObject = new Date(date);
     const month = dateObject.toLocaleString("default", {month: "long"});

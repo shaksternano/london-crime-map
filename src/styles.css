@@ -1,9 +1,14 @@
-body, p {
+body {
     margin: 0;
-    padding: 0;
+    width: 100vw;
+    height: 100vh;
 }
 
-.center {
+p {
+    margin: 0;
+}
+
+.content {
     display: flex;
     align-items: center;
     height: 100vh;
@@ -36,7 +41,8 @@ body, p {
 
 .side-panel {
     width: 22%;
-    margin: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .map-container {
@@ -131,14 +137,24 @@ body, p {
     gap: 2px;
 }
 
-.github-container {
-    position: relative;
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
 }
 
 .github {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
     width: 50px;
     cursor: pointer;
+}
+
+.data-source {
+    margin-top: auto;
+    margin-bottom: 0;
 }

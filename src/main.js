@@ -34,6 +34,7 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
  * @property {string[]} offenceGroups
  */
 
+const THE_CITY_OF_LONDON_AND_SOUTHWARK_ID = "the-city-of-london-and-southwark";
 const CAPITALIZE_EXCEPTIONS = [
     "a",
     "an",
@@ -104,15 +105,11 @@ async function main() {
     d3.select("#boroughs")
         .selectChildren()
         .on("click", function () {
+            selectedBorough = this.id;
             const date = dates[timelineSliderElement.value];
-            let boroughId = this.id;
-            if (boroughId === "southwark-and-city-of-london") {
-                boroughId = "southwark";
-            }
-            selectedBorough = boroughId;
             displayBoroughData(
                 crimeData,
-                boroughId,
+                selectedBorough,
                 date,
                 pieColors,
                 updateSelectedOffenceGroup,
@@ -265,7 +262,7 @@ function displayData(
         .selectChildren()
         .style("fill", function () {
             let boroughId = this.id;
-            if (boroughId === "southwark-and-city-of-london") {
+            if (boroughId === THE_CITY_OF_LONDON_AND_SOUTHWARK_ID) {
                 boroughId = "southwark";
             }
             const boroughData = boroughCrimes[boroughId];
@@ -288,7 +285,11 @@ function displayBoroughData(
     pieColors,
     updateSelectedOffenceGroup,
 ) {
-    const boroughData = crimeData.dates[date].boroughs[boroughId];
+    let fixedBoroughId = boroughId;
+    if (fixedBoroughId === THE_CITY_OF_LONDON_AND_SOUTHWARK_ID) {
+        fixedBoroughId = "southwark";
+    }
+    const boroughData = crimeData.dates[date].boroughs[fixedBoroughId];
     if (boroughData === undefined) {
         console.error(`Borough data for ${boroughId} on ${date} not found`);
         return;
@@ -313,7 +314,7 @@ function displayBoroughData(
 
     displayCrimePieChart(
         crimeData,
-        boroughId,
+        fixedBoroughId,
         date,
         pieColors,
         updateSelectedOffenceGroup,

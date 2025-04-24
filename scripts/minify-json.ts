@@ -10,15 +10,12 @@ function minifyJsonFiles(directory: string) {
         const stats = fs.statSync(filePath);
         if (stats.isDirectory()) {
             minifyJsonFiles(filePath);
-        } else {
-            const extension = path.extname(file);
-            if (extension === ".json" || extension === ".geojson") {
-                const content = fs.readFileSync(filePath, "utf8");
-                const minifiedContent = minifyJson(content);
-                const outputPath = path.join(OUTPUT_DIRECTORY, file);
-                fs.writeFileSync(outputPath, minifiedContent + "\n");
-                console.log(`Minified: ${filePath}`);
-            }
+        } else if (path.extname(file) === ".json") {
+            const content = fs.readFileSync(filePath, "utf8");
+            const minifiedContent = minifyJson(content);
+            const outputPath = path.join(OUTPUT_DIRECTORY, file);
+            fs.writeFileSync(outputPath, minifiedContent + "\n");
+            console.log(`Minified: ${filePath}`);
         }
     });
 }

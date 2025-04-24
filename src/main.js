@@ -50,7 +50,7 @@ const CAPITALIZE_EXCEPTIONS = [
 
 async function main() {
     // Source: https://github.com/radoi90/housequest-data/blob/master/london_boroughs.geojson
-    const geoJsonPromise = await d3.json("london-boroughs.geojson");
+    const geoJsonPromise = await d3.json("london-boroughs.geo.json");
     /**
      * @type {CrimeData}
      */

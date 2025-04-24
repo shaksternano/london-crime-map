@@ -1,6 +1,6 @@
 "use strict";
 
-import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import * as d3 from "d3";
 
 /**
  * @typedef {Object} CrimeData
@@ -145,9 +145,17 @@ function drawMap(geoJson) {
         .selectAll("path")
         .data(geoJson.features)
         .join("path")
-        .attr("id", d => d.properties.name.toLowerCase().replaceAll(" ", "-"))
+        .attr("id", d => nameToId(d.properties.name))
         .attr("class", "map-borough")
         .attr("d", path);
+}
+
+/**
+ * @param name {string}
+ * @returns {string}
+ */
+function nameToId(name) {
+    return name.toLowerCase().replaceAll(" ", "-");
 }
 
 /**
@@ -320,7 +328,7 @@ function displayData(
     offencesUpperBound,
 ) {
     const boroughCrimes = crimeData.dates[date].boroughs;
-    d3.select("#map")
+    const paths = d3.select("#map")
         .selectChildren()
         .style("fill", function () {
             let boroughId = this.id;
@@ -334,6 +342,20 @@ function displayData(
             }
             const ratio = boroughData.total_criminal_offences / offencesUpperBound;
             return getMapColor(ratio);
+        });
+    paths.selectChildren().remove();
+    paths.append("title")
+        .text(function (d) {
+            let boroughId = this.parentNode.id;
+            if (boroughId === CITY_OF_LONDON_ID) {
+                boroughId = "southwark";
+            }
+            const boroughData = boroughCrimes[boroughId];
+            if (boroughData === undefined) {
+                console.error(`Borough data for ${boroughId} on ${date} not found`);
+                return d.properties.name;
+            }
+            return `${d.properties.name}: ${boroughData.total_criminal_offences} criminal offences`;
         });
 }
 
@@ -423,12 +445,6 @@ function displayCrimePieChart(
     const radius = width / (2 * hoverSizeIncrease);
     const translate = width / 2;
 
-    const svg = d3.select("#borough-crime-pie-chart")
-        .attr("width", width)
-        .attr("height", width)
-        .append("g")
-        .attr("transform", `translate(${translate}, ${translate})`);
-
     // noinspection JSUnresolvedReference
     const pie = d3.pie()
         .value(d => d.count)
@@ -442,7 +458,16 @@ function displayCrimePieChart(
         .innerRadius(0)
         .outerRadius(radius * hoverSizeIncrease);
 
-    svg.selectAll("path")
+    const svg = d3.select("#borough-crime-pie-chart")
+        .attr("width", width)
+        .attr("height", width);
+    svg.selectChildren().remove();
+
+    const svgContent = svg.append("g")
+        .attr("id", "borough-crime-pie-chart-content")
+        .attr("transform", `translate(${translate}, ${translate})`);
+
+    svgContent.selectAll("path")
         .data(pie(processedBoroughData))
         .enter()
         .append("path")
@@ -470,7 +495,9 @@ function displayCrimePieChart(
                 .duration(400)
                 .ease(d3.easeBounceOut)
                 .attr("d", arc);
-        });
+        })
+        .append("title")
+        .text(d => `${d.data.offence}: ${d.data.count} occurences`);
 }
 
 /**

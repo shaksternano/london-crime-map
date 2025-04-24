@@ -497,7 +497,7 @@ function displayCrimePieChart(
                 .attr("d", arc);
         })
         .append("title")
-        .text(d => `${d.data.offence}: ${d.data.count} occurences`);
+        .text(d => `${d.data.offence}: ${d.data.count} occurrences`);
 }
 
 /**
